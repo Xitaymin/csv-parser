@@ -1,9 +1,6 @@
 package com.xitaymin;
 
-import com.xitaymin.setters.BooleanFieldSetter;
-import com.xitaymin.setters.FieldSetter;
-import com.xitaymin.setters.IntFieldSetter;
-import com.xitaymin.setters.StringSetter;
+import com.xitaymin.setters.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,6 +14,10 @@ public class SetterTypeResolver<T> {
         setters.put("String", new StringSetter<>());
         setters.put("boolean", new BooleanFieldSetter<>());
         setters.put("Boolean", new BooleanFieldSetter<>());
+        setters.put("Long", new LongFieldSetter<>());
+        setters.put("long", new LongFieldSetter<>());
+        setters.put("short", new ShortFieldSetter<>());
+
     }
 
     public FieldSetter<T> resolveSetter(String fieldType) {

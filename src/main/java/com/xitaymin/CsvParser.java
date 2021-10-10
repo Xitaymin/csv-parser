@@ -28,56 +28,23 @@ public class CsvParser {
     }
 
     public <T> List<T> parseLines(Class<T> tClass) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-
         List<T> list = new ArrayList<>();
-
         getAnnotatedFields(tClass);
         parseHeader();
-
         while (scanner.hasNextLine()) {
             String valuesLine = scanner.nextLine();
             if (!valuesLine.isBlank()) {
                 T t = tClass.getDeclaredConstructor().newInstance();
-
                 String[] values = valuesLine.split(",", -1);
-
                 //possible types примитив, боксовый тип или строка
-
-
                 for (Field field : annotatedFields) {
                     String fieldType = field.getType().getSimpleName();
                     CsvHeader annotation = field.getAnnotation(CsvHeader.class);
-//                    boolean required = annotation.required();
-//                    String header = annotation.name();
                     String valueFromCsv = values[headersWithIndexes.get(annotation.name())];
                     field.setAccessible(true);
 
                     FieldSetter<T> fieldSetter = new SetterTypeResolver<T>().resolveSetter(fieldType);
                     fieldSetter.setField(valueFromCsv, t, field);
-
-//                    if (fieldType.equals("int") || fieldType.equals("Integer")) {
-//                        int value;
-//                        try {
-//                            value = Integer.parseInt(valueFromCsv);
-//                        } catch (NumberFormatException e) {
-//                            if (required) {
-//                                throw new RequiredValueAbsentException(String.format("Required value for field %s with header %s is absent in csv file", field.getName(), annotation.name()));
-//                            } else field.setInt(t, Integer.MIN_VALUE);
-//                            continue;
-//                        }
-//                        field.setInt(t, value);
-//                    }
-//                else if (fieldType.equals("String")) {
-//                        field.set(t, valueFromCsv);
-//                    }
-//                else if (fieldType.equals("boolean") || fieldType.equals("Boolean")) {
-//                        if (valueFromCsv.equals("true") || valueFromCsv.equals("false")) {
-//                            boolean value = Boolean.parseBoolean(valueFromCsv);
-//                            field.setBoolean(t, value);
-//                        } else if (required) {
-//                            throw new RequiredValueAbsentException(String.format("Required value for field %s with header %s is absent in csv file", field.getName(), annotation.name()));
-//                        } else field.setBoolean(t, false);
-//                    }
                 }
                 list.add(t);
             }
