@@ -37,7 +37,7 @@ public class CsvParser {
                 if (!valuesLine.isBlank()) {
                     T t = tClass.getDeclaredConstructor().newInstance();
 
-                    String[] values = valuesLine.split(",");
+                    String[] values = valuesLine.split(",", -1);
 
                     //possible types примитив, боксовый тип или строка
 
@@ -50,28 +50,31 @@ public class CsvParser {
                         field.setAccessible(true);
 
                         if (fieldType.equals("int") || fieldType.equals("Integer")) {
-                            Integer value;
+                            int value;
                             try {
-                                value = Integer.valueOf(valueFromCsv);
+                                value = Integer.parseInt(valueFromCsv);
                             } catch (NumberFormatException e) {
                                 if (required) {
-                                    throw new RuntimeException("Required field value is absent in csv file");
-                                } else field.setInt(t, Integer.MAX_VALUE);
+                                    throw new RequiredValueAbsentException(String.format("Required value for field %s with header %s is absent in csv file", field.getName(), annotation.name()));
+                                } else field.setInt(t, Integer.MIN_VALUE);
                                 continue;
                             }
                             field.setInt(t, value);
                         } else if (fieldType.equals("String")) {
                             field.set(t, valueFromCsv);
                         } else if (fieldType.equals("boolean") || fieldType.equals("Boolean")) {
-                            Boolean value = Boolean.valueOf(valueFromCsv);
-                            field.setBoolean(t, value);
+                            if (valueFromCsv.equals("true") || valueFromCsv.equals("false")) {
+                                boolean value = Boolean.parseBoolean(valueFromCsv);
+                                field.setBoolean(t, value);
+                            } else if (required) {
+                                throw new RequiredValueAbsentException(String.format("Required value for field %s with header %s is absent in csv file", field.getName(), annotation.name()));
+                            } else field.setBoolean(t, false);
                         }
                     }
                     list.add(t);
                 }
             }
             return list;
-            // todo getFile
         } else throw new RuntimeException("File is not available.");
     }
 
@@ -89,7 +92,7 @@ public class CsvParser {
                     }
                 }
             }
-        } else throw new RuntimeException("Csv file doesn't contains all required fields");
+        } else throw new RequiredValueAbsentException("Csv file doesn't contains all required field headers");
 
         return null;
     }

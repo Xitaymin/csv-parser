@@ -1,7 +1,7 @@
 package com.xitaymin;
 
 public class Todo {
-    @CsvHeader(name = "id")
+    @CsvHeader(name = "id", required = false)
     private int id;
     @CsvHeader(name = "text")
     private String name;
@@ -37,7 +37,7 @@ public class Todo {
         return "Todo{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
-                ", required=" + done +
+                ", done=" + done +
                 '}';
     }
 }
