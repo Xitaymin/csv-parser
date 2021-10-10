@@ -1,4 +1,4 @@
-package com.xitaymin;
+package com.xitaymin.exeptions;
 
 public class RequiredValueAbsentException extends RuntimeException {
     public RequiredValueAbsentException() {

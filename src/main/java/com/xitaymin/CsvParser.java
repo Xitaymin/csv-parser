@@ -1,5 +1,9 @@
 package com.xitaymin;
 
+import com.xitaymin.exeptions.CsvContainerNotAvailableException;
+import com.xitaymin.exeptions.RequiredValueAbsentException;
+import com.xitaymin.setters.FieldSetter;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.lang.reflect.Field;
@@ -41,41 +45,44 @@ public class CsvParser {
 
 
                 for (Field field : annotatedFields) {
-
                     String fieldType = field.getType().getSimpleName();
                     CsvHeader annotation = field.getAnnotation(CsvHeader.class);
-                    boolean required = annotation.required();
-                    String header = annotation.name();
-                    String valueFromCsv = values[headersWithIndexes.get(header)];
+//                    boolean required = annotation.required();
+//                    String header = annotation.name();
+                    String valueFromCsv = values[headersWithIndexes.get(annotation.name())];
                     field.setAccessible(true);
 
-                    if (fieldType.equals("int") || fieldType.equals("Integer")) {
-                        int value;
-                        try {
-                            value = Integer.parseInt(valueFromCsv);
-                        } catch (NumberFormatException e) {
-                            if (required) {
-                                throw new RequiredValueAbsentException(String.format("Required value for field %s with header %s is absent in csv file", field.getName(), annotation.name()));
-                            } else field.setInt(t, Integer.MIN_VALUE);
-                            continue;
-                        }
-                        field.setInt(t, value);
-                    } else if (fieldType.equals("String")) {
-                        field.set(t, valueFromCsv);
-                    } else if (fieldType.equals("boolean") || fieldType.equals("Boolean")) {
-                        if (valueFromCsv.equals("true") || valueFromCsv.equals("false")) {
-                            boolean value = Boolean.parseBoolean(valueFromCsv);
-                            field.setBoolean(t, value);
-                        } else if (required) {
-                            throw new RequiredValueAbsentException(String.format("Required value for field %s with header %s is absent in csv file", field.getName(), annotation.name()));
-                        } else field.setBoolean(t, false);
-                    }
+                    FieldSetter<T> fieldSetter = new SetterTypeResolver<T>().resolveSetter(fieldType);
+                    fieldSetter.setField(valueFromCsv, t, field);
+
+//                    if (fieldType.equals("int") || fieldType.equals("Integer")) {
+//                        int value;
+//                        try {
+//                            value = Integer.parseInt(valueFromCsv);
+//                        } catch (NumberFormatException e) {
+//                            if (required) {
+//                                throw new RequiredValueAbsentException(String.format("Required value for field %s with header %s is absent in csv file", field.getName(), annotation.name()));
+//                            } else field.setInt(t, Integer.MIN_VALUE);
+//                            continue;
+//                        }
+//                        field.setInt(t, value);
+//                    }
+//                else if (fieldType.equals("String")) {
+//                        field.set(t, valueFromCsv);
+//                    }
+//                else if (fieldType.equals("boolean") || fieldType.equals("Boolean")) {
+//                        if (valueFromCsv.equals("true") || valueFromCsv.equals("false")) {
+//                            boolean value = Boolean.parseBoolean(valueFromCsv);
+//                            field.setBoolean(t, value);
+//                        } else if (required) {
+//                            throw new RequiredValueAbsentException(String.format("Required value for field %s with header %s is absent in csv file", field.getName(), annotation.name()));
+//                        } else field.setBoolean(t, false);
+//                    }
                 }
                 list.add(t);
             }
         }
         return list;
-//        } else throw new RuntimeException("File is not available.");
     }
 
     private <T> void getAnnotatedFields(Class<T> tClass) {
