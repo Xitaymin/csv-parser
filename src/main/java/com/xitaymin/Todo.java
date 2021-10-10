@@ -1,9 +1,12 @@
 package com.xitaymin;
 
 public class Todo {
+    @CsvHeader(name = "id")
     private int id;
+    @CsvHeader(name = "text")
     private String name;
-    private boolean required;
+    @CsvHeader(name = "done", required = false)
+    private boolean done;
 
     public int getId() {
         return id;
@@ -21,11 +24,20 @@ public class Todo {
         this.name = name;
     }
 
-    public boolean isRequired() {
-        return required;
+    public boolean isDone() {
+        return done;
     }
 
-    public void setRequired(boolean required) {
-        this.required = required;
+    public void setDone(boolean done) {
+        this.done = done;
+    }
+
+    @Override
+    public String toString() {
+        return "Todo{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", required=" + done +
+                '}';
     }
 }
