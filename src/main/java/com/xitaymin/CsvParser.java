@@ -11,6 +11,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 public class CsvParser {
+    private static final String FILE_NOT_AVAILABLE = "File with path %s doesn't exist or can't be read.";
+    private static final String REQUIRED_HEADERS_NOT_FOUND = "Csv file doesn't contains all required field headers";
     private final Scanner scanner;
     private final Map<String, Integer> headersWithIndexes = new HashMap<>();
     private final Set<Field> annotatedFields = new HashSet<>();
@@ -20,7 +22,7 @@ public class CsvParser {
         if (isFileAvailable(csvContainer)) {
             scanner = new Scanner(csvContainer);
         } else
-            throw new CsvContainerNotAvailableException(String.format("File with path %s doesn't exist or can't be read.", filePath));
+            throw new CsvContainerNotAvailableException(String.format(FILE_NOT_AVAILABLE, filePath));
     }
 
     private static boolean isFileAvailable(File file) {
@@ -36,7 +38,6 @@ public class CsvParser {
             if (!valuesLine.isBlank()) {
                 T t = tClass.getDeclaredConstructor().newInstance();
                 String[] values = valuesLine.split(",", -1);
-                //possible types примитив, боксовый тип или строка
                 for (Field field : annotatedFields) {
                     String fieldType = field.getType().getSimpleName();
                     CsvHeader annotation = field.getAnnotation(CsvHeader.class);
@@ -77,7 +78,7 @@ public class CsvParser {
                     }
                 }
             }
-        } else throw new RequiredValueAbsentException("Csv file doesn't contains all required field headers");
+        } else throw new RequiredValueAbsentException(REQUIRED_HEADERS_NOT_FOUND);
     }
 
     private Set<String> getRequiredHeaders() {

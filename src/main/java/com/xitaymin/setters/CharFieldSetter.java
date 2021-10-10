@@ -1,19 +1,18 @@
 package com.xitaymin.setters;
 
-public class BooleanFieldSetter<T> extends OtherFieldSetter<T> {
+public class CharFieldSetter<T> extends OtherFieldSetter<T> {
     @Override
     protected Object getSpecificValue(String valueFromCsv) {
-        return Boolean.parseBoolean(valueFromCsv);
+        return valueFromCsv.charAt(0);
     }
 
     @Override
     protected Object getDefaultValue() {
-        return false;
+        return Character.MIN_VALUE;
     }
 
     @Override
     protected boolean isValueFromCsvInvalid(String valueFromCsv) {
-        return !(valueFromCsv.equals("true") || valueFromCsv.equals("false"));
+        return valueFromCsv.length() > 1 || valueFromCsv.isBlank();
     }
 }
-
