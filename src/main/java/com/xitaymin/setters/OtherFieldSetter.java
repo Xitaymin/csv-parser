@@ -7,7 +7,7 @@ import java.lang.reflect.Field;
 
 public abstract class OtherFieldSetter<T> implements FieldSetter<T> {
     @Override
-    public void setField(String valueFromCsv, T target, Field field) throws IllegalAccessException {
+    public final void setField(String valueFromCsv, T target, Field field) throws IllegalAccessException {
         CsvHeader csvHeader = field.getAnnotation(CsvHeader.class);
         if (isValueFromCsvInvalid(valueFromCsv)) {
             if (csvHeader.required()) {
