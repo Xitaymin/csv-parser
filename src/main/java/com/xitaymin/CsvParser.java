@@ -1,5 +1,6 @@
 package com.xitaymin;
 
+import com.xitaymin.exeptions.BaseApplicationException;
 import com.xitaymin.exeptions.CsvContainerNotAvailableException;
 import com.xitaymin.exeptions.RequiredValueAbsentException;
 import com.xitaymin.setters.FieldSetter;
@@ -22,10 +23,14 @@ public class CsvParser {
     private final Reader reader;
     private final Map<String, Field> headersWithAnnotatedFields = new HashMap<>();
 
-    public CsvParser(String filePath) throws IOException {
+    public CsvParser(String filePath) {
         File csvContainer = new File(filePath);
         if (isFileAvailable(csvContainer)) {
-            reader = Files.newBufferedReader(Paths.get(filePath));
+            try {
+                reader = Files.newBufferedReader(Paths.get(filePath));
+            } catch (IOException e) {
+                throw new BaseApplicationException(e);
+            }
         } else throw new CsvContainerNotAvailableException(String.format(FILE_NOT_AVAILABLE, filePath));
     }
 
@@ -33,27 +38,38 @@ public class CsvParser {
         return file.exists() && file.canRead();
     }
 
-    public <T> List<T> parseLines(Class<T> tClass)
-            throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public <T> List<T> parseLines(Class<T> tClass) throws IOException {
         CSVFormat csvFormat = CSVFormat.DEFAULT.withFirstRecordAsHeader();
         CSVParser parser = new CSVParser(reader, csvFormat);
         List<String> headersInCsv = parser.getHeaderNames();
 
         defineFieldsWithAnnotation(tClass);
+        //todo define annotated fields and required headers
 //todo catch exceptions
         if (headersInCsv.containsAll(getRequiredHeaders())) {
             List<T> parsedObjects = new ArrayList<>();
             Set<String> headersFromAnnotationInCsv = intersection(headersInCsv, headersWithAnnotatedFields.keySet());
             for (CSVRecord record : parser.getRecords()) {
-                T t = tClass.getDeclaredConstructor()
-                        .newInstance();
+
+                T t;
+                try {
+                    t = tClass.getDeclaredConstructor()
+                            .newInstance();
+                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
+                    throw new BaseApplicationException(e);
+                }
+
                 for (String header : headersFromAnnotationInCsv) {
                     Field field = headersWithAnnotatedFields.get(header);
                     field.setAccessible(true);
                     String fieldType = field.getType()
                             .getSimpleName();
                     FieldSetter<T> fieldSetter = new SetterTypeResolver<T>().resolveSetter(fieldType);
-                    fieldSetter.setField(record.get(header), t, field);
+                    try {
+                        fieldSetter.setField(record.get(header), t, field);
+                    } catch (IllegalAccessException e) {
+                        throw new BaseApplicationException(e);
+                    }
                 }
                 parsedObjects.add(t);
             }
@@ -61,6 +77,8 @@ public class CsvParser {
         } else throw new RequiredValueAbsentException(REQUIRED_HEADERS_NOT_FOUND);
     }
 
+
+    //todo optimize this
 
     private <T> void defineFieldsWithAnnotation(Class<T> tClass) {
         Field[] fields = tClass.getDeclaredFields();
