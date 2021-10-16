@@ -2,6 +2,7 @@ package com.xitaymin;
 
 import com.xitaymin.exeptions.CsvContainerNotAvailableException;
 import com.xitaymin.exeptions.RequiredValueAbsentException;
+import com.xitaymin.setters.FieldSetter;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -10,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -18,7 +20,7 @@ public class CsvParser {
     private static final String FILE_NOT_AVAILABLE = "File with path %s doesn't exist or can't be read.";
     private static final String REQUIRED_HEADERS_NOT_FOUND = "Csv file doesn't contains all required field headers";
     private final Reader reader;
-    private final Map<String, Integer> headersWithIndexes = new HashMap<>();
+    //    private final Map<String, Integer> headersWithIndexes = new HashMap<>();
     private final Map<String, Field> headersWithAnnotatedFields = new HashMap<>();
 
     public CsvParser(String filePath) throws IOException {
@@ -32,24 +34,32 @@ public class CsvParser {
         return file.exists() && file.canRead();
     }
 
-    public <T> List<T> parseLines(Class<T> tClass) throws IOException {
+    public <T> List<T> parseLines(Class<T> tClass)
+            throws IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         CSVFormat csvFormat = CSVFormat.DEFAULT.withFirstRecordAsHeader();
         CSVParser parser = new CSVParser(reader, csvFormat);
         List<String> headersInCsv = parser.getHeaderNames();
 
+        defineFieldsWithAnnotation(tClass);
+
         if (headersInCsv.containsAll(getRequiredHeaders())) {
-
-
-            //join actual and all fields
-//            List<CSVRecord> record = parser.getRecords();
-
+            List<T> parsedObjects = new ArrayList<>();
+            Set<String> headersFromAnnotationInCsv = intersection(headersInCsv, headersWithAnnotatedFields.keySet());
             for (CSVRecord record : parser.getRecords()) {
-                for (int i = 0; i < headersInCsv.size(); i++) {
+                T t = tClass.getDeclaredConstructor()
+                        .newInstance();
+                for (String header : headersFromAnnotationInCsv) {
+                    Field field = headersWithAnnotatedFields.get(header);
+                    field.setAccessible(true);
+                    String fieldType = field.getType()
+                            .getSimpleName();
+                    FieldSetter<T> fieldSetter = new SetterTypeResolver<T>().resolveSetter(fieldType);
+                    fieldSetter.setField(record.get(header), t, field);
                 }
-
+                parsedObjects.add(t);
             }
+            return parsedObjects;
         } else throw new RequiredValueAbsentException(REQUIRED_HEADERS_NOT_FOUND);
-        return null;
     }
 
 
@@ -82,7 +92,7 @@ public class CsvParser {
 //        return parsedObjects;
 //    }
 
-    private <T> void getAnnotatedFields(Class<T> tClass) {
+    private <T> void defineFieldsWithAnnotation(Class<T> tClass) {
         Field[] fields = tClass.getDeclaredFields();
         for (Field field : fields) {
             if (field.isAnnotationPresent(CsvHeader.class)) {
