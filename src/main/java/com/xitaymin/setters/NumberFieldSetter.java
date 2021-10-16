@@ -10,7 +10,8 @@ public abstract class NumberFieldSetter<T> implements FieldSetter<T> {
     public final void setField(String valueFromCsv, T target, Field field) throws IllegalAccessException {
         CsvHeader csvHeader = field.getAnnotation(CsvHeader.class);
         try {
-            setSpecificValue(valueFromCsv, target, field);
+            field.set(target, parseTypeValue(valueFromCsv));
+
         } catch (NumberFormatException e) {
             if (csvHeader.required()) {
                 throw new RequiredValueAbsentException(String.format(REQUIRED_FIELD_VALUE_ABSENT, field.getName(), csvHeader.name()));
@@ -18,7 +19,7 @@ public abstract class NumberFieldSetter<T> implements FieldSetter<T> {
         }
     }
 
-    protected abstract Object getDefaultValue();
+    protected abstract Number getDefaultValue();
 
-    protected abstract void setSpecificValue(String valueFromCsv, T target, Field field) throws IllegalAccessException;
+    protected abstract Number parseTypeValue(String valueFromCsv);
 }

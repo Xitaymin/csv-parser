@@ -9,6 +9,6 @@ public class Main {
             throws NoSuchMethodException, IllegalAccessException, InstantiationException, IOException, InvocationTargetException {
         CsvParser csvParser = new CsvParser("src/main/resources/container.csv");
         List<Todo> list = csvParser.parseLines(Todo.class);
-//        System.out.println(list);
+        System.out.println(list);
     }
 }

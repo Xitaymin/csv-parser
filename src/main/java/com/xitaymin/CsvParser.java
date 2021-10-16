@@ -20,7 +20,6 @@ public class CsvParser {
     private static final String FILE_NOT_AVAILABLE = "File with path %s doesn't exist or can't be read.";
     private static final String REQUIRED_HEADERS_NOT_FOUND = "Csv file doesn't contains all required field headers";
     private final Reader reader;
-    //    private final Map<String, Integer> headersWithIndexes = new HashMap<>();
     private final Map<String, Field> headersWithAnnotatedFields = new HashMap<>();
 
     public CsvParser(String filePath) throws IOException {
@@ -41,7 +40,7 @@ public class CsvParser {
         List<String> headersInCsv = parser.getHeaderNames();
 
         defineFieldsWithAnnotation(tClass);
-
+//todo catch exceptions
         if (headersInCsv.containsAll(getRequiredHeaders())) {
             List<T> parsedObjects = new ArrayList<>();
             Set<String> headersFromAnnotationInCsv = intersection(headersInCsv, headersWithAnnotatedFields.keySet());
@@ -63,35 +62,6 @@ public class CsvParser {
     }
 
 
-//    public <T> List<T> parseLines(Class<T> tClass)
-//            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-//
-//        List<T> parsedObjects = new ArrayList<>();
-//        getAnnotatedFields(tClass);
-//        parseHeader();
-//
-//        while (scanner.hasNextLine()) {
-//            String valuesLine = scanner.nextLine();
-//            if (!valuesLine.isBlank()) {
-//                T t = tClass.getDeclaredConstructor()
-//                        .newInstance();
-//                String[] values = valuesLine.split(",", -1);
-//                for (Field field : annotatedFields) {
-//                    String fieldType = field.getType()
-//                            .getSimpleName();
-//                    CsvHeader annotation = field.getAnnotation(CsvHeader.class);
-//                    String valueFromCsv = values[headersWithIndexes.get(annotation.name())];
-//                    field.setAccessible(true);
-//
-//                    FieldSetter<T> fieldSetter = new SetterTypeResolver<T>().resolveSetter(fieldType);
-//                    fieldSetter.setField(valueFromCsv, t, field);
-//                }
-//                parsedObjects.add(t);
-//            }
-//        }
-//        return parsedObjects;
-//    }
-
     private <T> void defineFieldsWithAnnotation(Class<T> tClass) {
         Field[] fields = tClass.getDeclaredFields();
         for (Field field : fields) {
@@ -101,25 +71,6 @@ public class CsvParser {
             }
         }
     }
-
-//    private void parseHeader() {
-//        String headerLine = scanner.nextLine();
-//        String[] headers = headerLine.split(",");
-//        List<String> list = Arrays.asList(headers);
-//
-//        Set<String> requiredHeaders = getRequiredHeaders();
-//        if (list.containsAll(requiredHeaders)) {
-//            for (int i = 0; i < headers.length; i++) {
-//                for (Field field : annotatedFields) {
-//                    CsvHeader annotation = field.getAnnotation(CsvHeader.class);
-//                    String name = annotation.name();
-//                    if (name.equals(headers[i])) {
-//                        headersWithIndexes.put(name, i);
-//                    }
-//                }
-//            }
-//        } else throw new RequiredValueAbsentException(REQUIRED_HEADERS_NOT_FOUND);
-//    }
 
     private Set<String> getRequiredHeaders() {
         Set<String> requiredHeaders = new HashSet<>();
