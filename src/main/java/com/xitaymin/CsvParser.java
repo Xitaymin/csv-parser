@@ -19,7 +19,7 @@ import java.util.*;
 
 public class CsvParser {
     private static final String FILE_NOT_AVAILABLE = "File with path %s doesn't exist or can't be read.";
-    private static final String REQUIRED_HEADERS_NOT_FOUND = "Csv file doesn't contains all required field headers";
+    public static final String REQUIRED_HEADERS_NOT_FOUND = "Csv file doesn't contains all required field headers.";
     private final Reader reader;
     private final Map<String, Field> headersWithAnnotatedFields = new HashMap<>();
 
