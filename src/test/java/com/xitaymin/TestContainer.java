@@ -3,7 +3,7 @@ package com.xitaymin;
 public class TestContainer {
     @CsvHeader(name = "byteId")
     private byte byteId;
-    @CsvHeader(name = "refFloat")
+    @CsvHeader(name = "refFloat", required = false)
     private Float refFloat;
     @CsvHeader(name = "done")
     private boolean done;

@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import static com.xitaymin.CsvParser.REQUIRED_HEADERS_NOT_FOUND;
+import static com.xitaymin.setters.FieldSetter.REQUIRED_FIELD_VALUE_ABSENT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -21,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class CsvParserTest {
 
     @Test
-    public void checkIfAllNumberPrimitiveTypesParsed() throws IOException {
+    public void checkIfValidCsvParsedProperly() throws IOException {
         String filePath = "src/test/resources/valid.csv";
 
         CSVFormat csvFormat = CSVFormat.DEFAULT.withFirstRecordAsHeader();
@@ -48,17 +49,32 @@ class CsvParserTest {
     @Test
     public void checkIfExceptionThrowsWhenRequiredHeadersAbsent() {
         String filePath = "src/test/resources/absent_required_field.csv";
-
         CsvParser csvParser = new CsvParser(filePath);
 
         Throwable throwable = assertThrows(RequiredValueAbsentException.class,
                 () -> csvParser.parseLines(TestContainer.class));
         assertThat(throwable).hasMessage(REQUIRED_HEADERS_NOT_FOUND);
+    }
+
+    @Test
+    public void checkIfExceptionThrowsWhenRequiredHeaderCantBeParsed() {
+        String filePath = "src/test/resources/invalid_required_field.csv";
+        CsvParser csvParser = new CsvParser(filePath);
+
+        Throwable throwable = assertThrows(RequiredValueAbsentException.class,
+                () -> csvParser.parseLines(TestContainer.class));
+        assertThat(throwable).hasMessage(String.format(REQUIRED_FIELD_VALUE_ABSENT, "byteId", "byteId"));
 
     }
 
     @Test
-    public void checkIfForNotRequiredHeaderDefaultValueSet() {
+    public void checkIfForNotRequiredHeaderDefaultValueSet() throws IOException {
+        String filePath = "src/test/resources/invalid_not_required_field.csv";
+        CsvParser csvParser = new CsvParser(filePath);
+        List<TestContainer> list = csvParser.parseLines(TestContainer.class);
+        TestContainer container = list.get(0);
+
+        assertEquals(container.getRefFloat(), Float.MIN_VALUE);
     }
 
 
