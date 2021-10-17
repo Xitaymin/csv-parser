@@ -11,7 +11,8 @@ public abstract class OtherFieldSetter<T> implements FieldSetter<T> {
         CsvHeader csvHeader = field.getAnnotation(CsvHeader.class);
         if (isValueFromCsvInvalid(valueFromCsv)) {
             if (csvHeader.required()) {
-                throw new RequiredValueAbsentException(String.format(REQUIRED_FIELD_VALUE_ABSENT, field.getName(), csvHeader.name()));
+                throw new RequiredValueAbsentException(
+                        String.format(REQUIRED_FIELD_VALUE_ABSENT, field.getName(), csvHeader.name()));
             } else field.set(target, getDefaultValue());
             return;
         }

@@ -45,33 +45,33 @@ public class CsvParser {
 
         defineFieldsWithAnnotation(tClass);
         //todo define annotated fields and required headers
-//todo catch exceptions
         if (headersInCsv.containsAll(getRequiredHeaders())) {
             List<T> parsedObjects = new ArrayList<>();
             Set<String> headersFromAnnotationInCsv = intersection(headersInCsv, headersWithAnnotatedFields.keySet());
             for (CSVRecord record : parser.getRecords()) {
 
-                T t;
+                T parsedObject;
                 try {
-                    t = tClass.getDeclaredConstructor()
-                            .newInstance();
+                    parsedObject = tClass.getDeclaredConstructor().newInstance();
                 } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
                     throw new BaseApplicationException(e);
                 }
 
                 for (String header : headersFromAnnotationInCsv) {
+
                     Field field = headersWithAnnotatedFields.get(header);
                     field.setAccessible(true);
-                    String fieldType = field.getType()
-                            .getSimpleName();
+                    String fieldType = field.getType().getSimpleName();
+
                     FieldSetter<T> fieldSetter = new SetterTypeResolver<T>().resolveSetter(fieldType);
                     try {
-                        fieldSetter.setField(record.get(header), t, field);
+                        fieldSetter.setField(record.get(header), parsedObject, field);
                     } catch (IllegalAccessException e) {
                         throw new BaseApplicationException(e);
                     }
                 }
-                parsedObjects.add(t);
+
+                parsedObjects.add(parsedObject);
             }
             return parsedObjects;
         } else throw new RequiredValueAbsentException(REQUIRED_HEADERS_NOT_FOUND);
@@ -82,6 +82,7 @@ public class CsvParser {
 
     private <T> void defineFieldsWithAnnotation(Class<T> tClass) {
         Field[] fields = tClass.getDeclaredFields();
+
         for (Field field : fields) {
             if (field.isAnnotationPresent(CsvHeader.class)) {
                 CsvHeader annotation = field.getAnnotation(CsvHeader.class);
@@ -92,12 +93,14 @@ public class CsvParser {
 
     private Set<String> getRequiredHeaders() {
         Set<String> requiredHeaders = new HashSet<>();
+
         for (Field field : headersWithAnnotatedFields.values()) {
             CsvHeader csvHeader = field.getAnnotation(CsvHeader.class);
             if (csvHeader.required()) {
                 requiredHeaders.add(csvHeader.name());
             }
         }
+
         return requiredHeaders;
     }
 
