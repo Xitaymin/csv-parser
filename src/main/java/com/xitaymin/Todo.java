@@ -10,10 +10,6 @@ public class Todo {
 
     @Override
     public String toString() {
-        return "Todo{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", done=" + done +
-                '}';
+        return "Todo{" + "id=" + id + ", name='" + name + '\'' + ", done=" + done + '}';
     }
 }

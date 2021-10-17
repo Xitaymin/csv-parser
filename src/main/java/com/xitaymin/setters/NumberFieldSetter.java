@@ -14,7 +14,8 @@ public abstract class NumberFieldSetter<T> implements FieldSetter<T> {
 
         } catch (NumberFormatException e) {
             if (csvHeader.required()) {
-                throw new RequiredValueAbsentException(String.format(REQUIRED_FIELD_VALUE_ABSENT, field.getName(), csvHeader.name()));
+                throw new RequiredValueAbsentException(
+                        String.format(REQUIRED_FIELD_VALUE_ABSENT, field.getName(), csvHeader.name()));
             } else field.set(target, getDefaultValue());
         }
     }

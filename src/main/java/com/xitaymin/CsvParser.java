@@ -15,11 +15,16 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class CsvParser {
-    private static final String FILE_NOT_AVAILABLE = "File with path %s doesn't exist or can't be read.";
     public static final String REQUIRED_HEADERS_NOT_FOUND = "Csv file doesn't contains all required field headers.";
+    private static final String FILE_NOT_AVAILABLE = "File with path %s doesn't exist or can't be read.";
     private final Reader reader;
     private final Map<String, Field> headersWithAnnotatedFields = new HashMap<>();
 
@@ -39,12 +44,13 @@ public class CsvParser {
     }
 
     public <T> List<T> parseLines(Class<T> tClass) throws IOException {
+
         CSVFormat csvFormat = CSVFormat.DEFAULT.withFirstRecordAsHeader();
         CSVParser parser = new CSVParser(reader, csvFormat);
         List<String> headersInCsv = parser.getHeaderNames();
 
         defineFieldsWithAnnotation(tClass);
-        //todo define annotated fields and required headers
+
         if (headersInCsv.containsAll(getRequiredHeaders())) {
             List<T> parsedObjects = new ArrayList<>();
             Set<String> headersFromAnnotationInCsv = intersection(headersInCsv, headersWithAnnotatedFields.keySet());
@@ -77,8 +83,6 @@ public class CsvParser {
         } else throw new RequiredValueAbsentException(REQUIRED_HEADERS_NOT_FOUND);
     }
 
-
-    //todo optimize this
 
     private <T> void defineFieldsWithAnnotation(Class<T> tClass) {
         Field[] fields = tClass.getDeclaredFields();

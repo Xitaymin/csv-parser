@@ -9,5 +9,6 @@ import java.lang.annotation.Target;
 @Target(value = ElementType.FIELD)
 public @interface CsvHeader {
     String name();
+
     boolean required() default true;
 }

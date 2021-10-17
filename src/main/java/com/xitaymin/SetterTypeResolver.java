@@ -1,12 +1,21 @@
 package com.xitaymin;
 
-import com.xitaymin.setters.*;
+import com.xitaymin.setters.BooleanFieldSetter;
+import com.xitaymin.setters.ByteFieldSetter;
+import com.xitaymin.setters.CharFieldSetter;
+import com.xitaymin.setters.DoubleFieldSetter;
+import com.xitaymin.setters.FieldSetter;
+import com.xitaymin.setters.FloatFieldSetter;
+import com.xitaymin.setters.IntFieldSetter;
+import com.xitaymin.setters.LongFieldSetter;
+import com.xitaymin.setters.ShortFieldSetter;
+import com.xitaymin.setters.StringFieldSetter;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class SetterTypeResolver<T> {
-    private Map<String, FieldSetter<T>> setters = new HashMap<>();
+    private final Map<String, FieldSetter<T>> setters = new HashMap<>();
 
     public SetterTypeResolver() {
         final FieldSetter<T> intSetter = new IntFieldSetter<>();
